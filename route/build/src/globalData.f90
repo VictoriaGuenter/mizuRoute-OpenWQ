@@ -69,7 +69,7 @@ MODULE globalData
   USE var_lookup, ONLY: nVarsMC      ! number of variables in data structure (restart vars for muskingum-cunge routing)
   USE var_lookup, ONLY: nVarsDW      ! number of variables in data structure (restart vars for diffusive wave routing)
   USE var_lookup, ONLY: nVarsTracer  ! number of variables in data structure (restart vars for tracer)
-
+  USE openWQ,     ONLY : CLASSWQ_openwq! OpenWQ interface
   implicit none
 
   save
@@ -284,5 +284,8 @@ MODULE globalData
 
   ! -- reach to reach connection
   type(commLink),     allocatable, public :: commRch(:)             ! reach-reach connections for reach flux transfer
+
+! openwq variable
+  type(CLASSWQ_openwq),save,public            :: openwq_obj
 
 END MODULE globalData

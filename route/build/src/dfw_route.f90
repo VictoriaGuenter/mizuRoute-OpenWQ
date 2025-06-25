@@ -25,7 +25,7 @@ USE hydraulic,     ONLY: water_height
 USE hydraulic,     ONLY: celerity
 USE hydraulic,     ONLY: diffusivity
 USE data_assimilation, ONLY: direct_insertion ! qmod option (use 1==direct insertion)
-
+USE mizuroute_openwq,   only:openwq_run_space_step
 implicit none
 
 private
@@ -159,7 +159,8 @@ CONTAINS
  endif
 
  ! solve diffusive wave equation
- call diffusive_wave(RPARAM_in(segIndex),                     &  ! input: parameter at segIndex reach
+ call diffusive_wave(segIndex,RPARAM_in(segIndex),                     &  ! input: parameter at segIndex reach
+                     NETOPO_in, &
                      T0,T1,                                   &  ! input: start and end of the time step
                      Qupstream_mod,                           &  ! input: total discharge at top of the reach being processed
                      Qlat,                                    &  ! input: lateral flow [m3/s]
@@ -204,7 +205,9 @@ CONTAINS
  ! *********************************************************************
  ! subroutine: solve diffuisve wave equation
  ! *********************************************************************
- SUBROUTINE diffusive_wave(rch_param,     & ! input: river parameter data structure
+ SUBROUTINE diffusive_wave(segIndex,&
+                           rch_param,     & ! input: river parameter data structure
+                           netopo_in, &
                            T0,T1,         & ! input: start and end of the time step
                            Qupstream,    & ! input: discharge from upstream
                            Qlat,          & ! input: lateral discharge into chaneel [m3/s]
@@ -225,6 +228,8 @@ CONTAINS
  implicit none
  ! Argument variables
  type(RCHPRP), intent(in)        :: rch_param      ! River reach parameter
+ type(RCHTOPO), intent(in),    allocatable :: NETOPO_in(:)      ! River Network topology
+
  real(dp),     intent(in)        :: T0,T1          ! start and end of the time step (seconds)
  real(dp),     intent(in)        :: Qupstream      ! total discharge at top of the reach being processed
  real(dp),     intent(in)        :: Qlat           ! lateral discharge into chaneel [m3/s]
@@ -246,6 +251,7 @@ CONTAINS
  integer(i4b)                    :: it             ! loop index
  integer(i4b)                    :: ntSub          ! number of sub time-step
  character(len=strLen)           :: cmessage       ! error message from subroutine
+ integer(i4b) :: segIndex
 
  ierr=0; message='diffusive_wave/'
 
@@ -340,6 +346,15 @@ CONTAINS
      rflux%ROUTE(idxDW)%FLOOD_VOL(1) = 0._dp
      rflux%ROUTE(idxDW)%REACH_ELE    = 0._dp
    end if
+
+   ! openwq space
+   call openwq_run_space_step(segIndex,   & ! index_openwq
+   netopo_in, &
+      rflux%ROUTE(idxDW)%REACH_VOL(0),    & ! Volume (source)
+      Qlocal(1,1)*dT,                     & ! flow in
+      rflux%ROUTE(idxDW)%REACH_Q*dT)      ! flow out
+
+
  else ! if head-water and pour runnof to the bottom of reach
 
    rflux%ROUTE(idxDW)%REACH_Q = Qlat

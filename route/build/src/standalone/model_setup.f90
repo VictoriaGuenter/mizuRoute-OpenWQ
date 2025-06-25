@@ -76,12 +76,12 @@ CONTAINS
 #if defined(VERSION)
   version=VERSION
 #endif
-#if defined(HASH)
-  gitHash=HASH
-#endif
-#if defined(BRANCH)
-  gitBranch=BRANCH
-#endif
+! #if defined(HASH)
+!   gitHash=HASH
+! #endif
+! #if defined(BRANCH)
+!   gitBranch=BRANCH
+! #endif
 
    ! runoff input files initialization
    call init_inFile_pop(ierr, cmessage)

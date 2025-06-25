@@ -56,7 +56,7 @@ CONTAINS
  character(len=strLen)                    :: fmt1,fmt2       ! format string
 
  ierr=0; message='accum_inst_runoff/'
-
+print*, message
  ! identify number of upstream segments of the reach being processed
  nUps = size(NETOPO_in(segIndex)%UREACHI)
 

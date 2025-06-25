@@ -44,6 +44,7 @@ CONTAINS
     USE public_var, ONLY: days_per_yr         ! days per a year = 365
     USE public_var, ONLY: months_per_yr       ! months per a year = 12
     USE public_var, ONLY: calendar            ! calendar name
+    USE mizuroute_openwq,   only:openwq_run_space_step
 
     implicit none
     ! Argument variables:
@@ -83,6 +84,7 @@ CONTAINS
 
     ierr=0; message='lake_route/'
 
+    print*, 'lake routing'
     verbose = .false.
     if(NETOPO_in(segIndex)%REACHID == desireId) verbose = .true.
 
@@ -467,6 +469,14 @@ CONTAINS
 !        ierr = 1; message=trim(message)//trim(cmessage);
 !      endif
 !    endif
+
+    ! openwq space
+   call openwq_run_space_step(segIndex,   & ! index_openwq
+   NETOPO_in, &
+   RCHFLX_out(segIndex)%ROUTE(idxRoute)%REACH_VOL(1),    & ! Volume (source)
+   q_upstream*dt,                     & ! flow in
+   RCHFLX_out(segIndex)%ROUTE(idxRoute)%REACH_Q*dt)      ! flow out
+
 
     call comp_reach_wb(NETOPO_in(segIndex)%REACHID, idxRoute, q_upstream, RCHFLX_out(segIndex)%BASIN_QR(1), RCHFLX_out(segIndex), &
                        verbose, lakeFlag=.true.,tolerance=lakeWBtol)

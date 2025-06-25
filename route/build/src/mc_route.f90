@@ -261,7 +261,7 @@ CONTAINS
  real(dp), parameter                      :: Y = 0.5      ! muskingum parameter Y (this is fixed)
 
  ierr=0; message='muskingum-cunge/'
-
+print*, message
  Q(0,0) = rstate%molecule%Q(1) ! inflow at previous time step (t-1)
  Q(0,1) = rstate%molecule%Q(2) ! outflow at previous time step (t-1)
  Q(1,1) = realMissing

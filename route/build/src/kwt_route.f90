@@ -136,7 +136,7 @@ CONTAINS
    character(len=strLen)                       :: CMESSAGE      ! error message for downwind routine
 
    ierr=0; message='kwt_rch/'
-
+print*, message
    verbose = .false.
    if(NETOPO_in(segIndex)%REACHID == desireId) verbose = .true.
 

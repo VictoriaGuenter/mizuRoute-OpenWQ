@@ -76,7 +76,7 @@ CONTAINS
  character(len=strLen)                     :: cmessage          ! error message from subroutine
 
  ierr=0; message='kw_rch/'
-
+print*, message
  verbose = .false.
  if(NETOPO_in(segIndex)%REACHID == desireId) verbose = .true.
 
