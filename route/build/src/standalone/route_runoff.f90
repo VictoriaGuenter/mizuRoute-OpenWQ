@@ -38,6 +38,7 @@ USE globalData,         ONLY : openwq_obj
 USE mizuroute_openwq,   ONLY : openwq_init
 USE mizuroute_openwq,   ONLY : openwq_run_time_start
 USE mizuroute_openwq,   ONLY : openwq_run_time_end
+USE mpi_utils,          ONLY : shr_mpi_barrier
 USE, intrinsic :: iso_c_binding
 
 implicit none
@@ -95,14 +96,14 @@ do while (.not.finished)
   if(ierr/=0) call handle_err(ierr, cmessage)
 
   if(pid==0)then
-    ! *** OPENWQ: call run_time_start function
-    call openwq_run_time_start(openwq_obj)
-
     call t_startf ('input')
     call get_hru_runoff(ierr, cmessage)
     if(ierr/=0) call handle_err(ierr, cmessage)
     call t_stopf ('input')
   endif
+
+  ! *** OPENWQ: call run_time_start function
+  call openwq_run_time_start(openwq_obj)
 
   call t_startf ('route-total')
   call mpi_route(pid, nNodes, mpicom_route, ierr, cmessage)
@@ -113,9 +114,13 @@ do while (.not.finished)
   call output(ierr, cmessage)
   if(ierr/=0) call handle_err(ierr, cmessage)
   call t_stopf ('output')
+  print*, 'output', pid
 
+  call shr_mpi_barrier(mpicom_route)
   ! *** OPENWQ: call run_time_end function
-  call openwq_run_time_end(openwq_obj)
+  if (pid==0) then
+    call openwq_run_time_end(openwq_obj)
+  end if
 
   call main_restart(ierr, cmessage)
   if(ierr/=0) call handle_err(ierr, cmessage)
