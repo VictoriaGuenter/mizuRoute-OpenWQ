@@ -242,7 +242,7 @@ subroutine openwq_run_space_step(segIndex,      & ! index
       real(dp)           :: flux_m3_sec
       real(dp)           :: flux_m3_timestep
 ! return
-      print*, 'run_space_step', pid, segIndex
+      ! print*, 'run_space_step', pid, segIndex
       ! Get time from mizuroute
       simtime(1) = simDatetime(1)%year()
       simtime(2) = simDatetime(1)%month()

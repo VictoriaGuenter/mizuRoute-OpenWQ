@@ -74,7 +74,7 @@ CONTAINS
  character(len=strLen)                    :: cmessage       ! error message from subroutine
 
  ierr=0; message='irf_rch/'
-print*, message
+! print*, message
  verbose = .false.
  if(NETOPO_in(segIndex)%REACHID == desireId) verbose = .true.
 
@@ -142,7 +142,9 @@ print*, message
   endif
 
   ! perform UH convolution
-  call conv_upsbas_qr(RPARAM_in(segIndex),       &    ! input: parameter at segIndex reach
+  call conv_upsbas_qr(segIndex, &
+                      RPARAM_in(segIndex),       &    ! input: parameter at segIndex reach
+                      NETOPO_in, &
                       NETOPO_in(segIndex)%UH,    &    ! input: reach unit hydrograph
                       q_upstream_mod,            &    ! input: total discharge from the upstreams
                       Qlat,                      &    ! input: lateral flow [m3/s]
@@ -213,7 +215,9 @@ print*, message
  ! *********************************************************************
  ! subroutine: Compute delayed runoff from the upstream segments
  ! *********************************************************************
- SUBROUTINE conv_upsbas_qr(rch_param,  &    ! input: river parameter data structure
+ SUBROUTINE conv_upsbas_qr(segIndex, &
+                           rch_param,  &    ! input: river parameter data structure
+                           netopo_in, &
                            reach_uh,   &    ! input: reach unit hydrograph
                            q_upstream, &    ! input:
                            Qlat,       &    ! input:
@@ -222,10 +226,14 @@ print*, message
  ! ----------------------------------------------------------------------------------------
  ! Details: Convolute runoff volume of upstream at one reach at one time step
  ! ----------------------------------------------------------------------------------------
+USE mizuroute_openwq,   only:openwq_run_space_step
 
  implicit none
  ! Argument variables
+ integer(i4b),intent(in) :: segIndex
  type(RCHPRP), intent(in)               :: rch_param    ! River reach parameter
+  type(RCHTOPO), intent(in),    allocatable :: NETOPO_in(:)      ! River Network topology
+
  real(dp),     intent(in)               :: reach_uh(:)  ! reach unit hydrograph
  real(dp),     intent(in)               :: q_upstream   ! total discharge at top of the reach being processed
  real(dp),     intent(in)               :: Qlat         ! lataral flow
@@ -259,6 +267,13 @@ print*, message
  rflux%QFUTURE_IRF=eoshift(rflux%QFUTURE_IRF,shift=1)
 
  rflux%QFUTURE_IRF(nTDH) = 0._dp
+
+ ! openwq_space
+ call openwq_run_space_step(segIndex, & ! index_openwq
+ netopo_in, &
+  rflux%ROUTE(idxIRF)%REACH_VOL(0), & ! Volume (source)
+  q_upstream, & ! flow in
+  rflux%ROUTE(idxIRF)%REACH_Q*dt) ! flow out
  else ! length < min_length_route: length is short enough to just pass upstream to downstream
    rflux%QFUTURE_IRF(:) = 0._dp
    rflux%QFUTURE_IRF(1) = q_upstream
