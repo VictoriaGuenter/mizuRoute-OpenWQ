@@ -72,6 +72,7 @@ MODULE mpi_utils
   integer(i4b), parameter :: send_data_tag=2001
   integer(i4b), parameter :: return_data_tag=2002
   integer(i4b)            :: status(MPI_STATUS_SIZE)
+  integer(i4b), parameter,public :: openwq_tag = 3000
 
 CONTAINS
 

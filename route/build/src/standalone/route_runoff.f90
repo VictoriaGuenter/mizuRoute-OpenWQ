@@ -38,6 +38,7 @@ USE globalData,         ONLY : openwq_obj
 USE mizuroute_openwq,   ONLY : openwq_init
 USE mizuroute_openwq,   ONLY : openwq_run_time_start
 USE mizuroute_openwq,   ONLY : openwq_run_time_end
+USE mizuroute_openwq, ONLY : openwq_handle_run_space_step
 USE mpi_utils,          ONLY : shr_mpi_barrier
 USE, intrinsic :: iso_c_binding
 
@@ -117,6 +118,9 @@ do while (.not.finished)
   print*, 'output', pid
 
   call shr_mpi_barrier(mpicom_route)
+  if (pid == 0) call openwq_handle_run_space_step
+  call shr_mpi_barrier(mpicom_route)
+  
   ! *** OPENWQ: call run_time_end function
   if (pid==0) then
     call openwq_run_time_end(openwq_obj)

@@ -719,6 +719,7 @@ CONTAINS
                                iStart,          &  ! input: start index
                                iCount,          &  ! input: length of vector
                                ierr, message)      ! output: error control
+                               use globalData, only: pid
   implicit none
   ! Argument variables:
   type(file_desc_t),     intent(inout) :: pioFileDesc  ! pio file handle
@@ -758,6 +759,7 @@ CONTAINS
                            iStart,          &  ! input: start index
                            iCount,          &  ! input: length of vector
                            ierr, message)      ! output: error control
+                           use globalData,only : pid
   implicit none
   ! Argument variables:
   type(file_desc_t),     intent(inout) :: pioFileDesc  ! pio file handle
