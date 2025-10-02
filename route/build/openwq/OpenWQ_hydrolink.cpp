@@ -96,7 +96,7 @@ int CLASSWQ_openwq::openwq_run_time_start(
     int nRch_2openwq,
     double REACH_VOL_0[]
     ) {
-    
+    // printf("99\n");
     time_t simtime = OpenWQ_units_ref->convertTime_ints2time_t(
         *OpenWQ_wqconfig_ref,
         simtime_mizuroute[0], 
@@ -148,7 +148,6 @@ int CLASSWQ_openwq::openwq_run_space(
     // Convert Fortran Index to C++ index
     ix_s -= 1; iy_s -= 1; iz_s -= 1;
     ix_r -= 1; iy_r -= 1; iz_r -= 1;
-
    
     time_t simtime = OpenWQ_units_ref->convertTime_ints2time_t(
         *OpenWQ_wqconfig_ref,
@@ -183,7 +182,6 @@ int CLASSWQ_openwq::openwq_run_space(
         source, ix_s, iy_s, iz_s,
         recipient, ix_r, iy_r, iz_r,
         wflux_s2r, wmass_source);
-
     return 0;
 }
 
@@ -196,6 +194,7 @@ int CLASSWQ_openwq::openwq_run_space_in(
     // Convert Fortran Index to C++ index
     ix_r -= 1; iy_r -= 1; iz_r -= 1;
     
+    // printf("199\n");
     time_t simtime = OpenWQ_units_ref->convertTime_ints2time_t(
         *OpenWQ_wqconfig_ref,
         simtime_summa[0], 
@@ -230,7 +229,7 @@ int CLASSWQ_openwq::openwq_run_space_in(
 
 int CLASSWQ_openwq::openwq_run_time_end(
     int simtime_mizuroute[]) {
-    
+//   printf("234\n");  
     time_t simtime = OpenWQ_units_ref->convertTime_ints2time_t(
         *OpenWQ_wqconfig_ref,
         simtime_mizuroute[0], 

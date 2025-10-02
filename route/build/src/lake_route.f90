@@ -84,7 +84,6 @@ CONTAINS
 
     ierr=0; message='lake_route/'
 
-    print*, 'lake routing'
     verbose = .false.
     if(NETOPO_in(segIndex)%REACHID == desireId) verbose = .true.
 

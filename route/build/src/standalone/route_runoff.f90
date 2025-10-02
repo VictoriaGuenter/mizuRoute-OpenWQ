@@ -115,7 +115,6 @@ do while (.not.finished)
   call output(ierr, cmessage)
   if(ierr/=0) call handle_err(ierr, cmessage)
   call t_stopf ('output')
-  print*, 'output', pid
 
   call shr_mpi_barrier(mpicom_route)
   if (pid == 0) call openwq_handle_run_space_step

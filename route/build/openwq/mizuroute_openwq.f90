@@ -52,8 +52,6 @@ subroutine openwq_init(err, message)
       integer(kind=MPI_ADDRESS_KIND) :: extent
       integer :: openwq_run_space_type_mpi0
 
-      print*, pid, 'init_nRch', nRch, size(reachID)
-
       if (pid == 0) then
       ! initalize openWQ object
       openwq_obj = CLASSWQ_openwq() 
@@ -127,22 +125,15 @@ subroutine openwq_run_time_start(openwq_obj)
 
       message = "openwq_run_time_start/"
 
-      ! print*, 'run time start'
-      ! print*, nRch
       do iProc = 0, size(ndata_per_proc)-1
             ndata_per_proc(iProc) = rch_per_proc(iProc)
       end do
       ndata_per_proc(0) = ndata_per_proc(0) + rch_per_proc(-1)
-      ! print*, 'ndata', ndata_per_proc
-      ! print*, sum(ndata_per_proc), nRch
-      ! print*, 'mainstem reach', nRch_mainstem, rch_per_proc(-1)
       !return
       allocate(REACH_VOL_local(ndata_per_proc(pid)))
       ! Getting reach volume to update openwq:waterVol_hydromodel
       if (allocated(RCHFLX_trib)) then
             ! associate(segIndexSub => domains_mpi%segIndex)
-            !print*, size(RCHFLX_trib)
-            !print*, 'reachID', size(reachID)
             if (masterproc) then
                   do iRch = 1, nRch_mainstem
                         REACH_VOL_local(iRch) = RCHFLX_trib(iRch)%ROUTE(1)%REACH_VOL(0)
@@ -152,8 +143,6 @@ subroutine openwq_run_time_start(openwq_obj)
                   end do
             else
                   do iRch = 1, size(RCHFLX_trib)
-                        !print*, iRch, pid, RCHFLX_trib(iRch)%ROUTE(1)%REACH_VOL(0)
-                        !print*, domains_mpi%segIndex(iRch)
                         REACH_VOL_local(iRch) = RCHFLX_trib(iRch)%ROUTE(1)%REACH_VOL(0)
                   end do
             end if
@@ -228,7 +217,6 @@ subroutine openwq_run_space_step_basin_in()
       iy_r_openwq = 1
       iz_r_openwq = 1 
 
-      print*, 'openwq_run_space_step_basin_in'
       ! Time step
       mizuroute_timestep = TSEC(2) - TSEC(1)  
 
@@ -311,7 +299,6 @@ subroutine openwq_run_space_step(segIndex,      & ! index
       integer(i4b) :: request
       integer(i4b) :: i
 ! return
-      ! print*, 'run_space_step', pid, segIndex
       ! Get time from mizuroute
       simtime(1) = simDatetime(1)%year()
       simtime(2) = simDatetime(1)%month()
@@ -326,7 +313,6 @@ subroutine openwq_run_space_step(segIndex,      & ! index
       iy_r_openwq = 1
       iz_s_openwq = 1
       iz_r_openwq = 1 
-      ! print*, 'openwq_run_space_step'
 
       ! Time step
       mizuroute_timestep = TSEC(2) - TSEC(1)  
@@ -341,8 +327,6 @@ subroutine openwq_run_space_step(segIndex,      & ! index
       ! ====================================================
       ! segIndex to segIndex+1
       index_s_openwq = river_network_reaches
-      ! print*, 'run_step', segIndex
-      ! print*, lbound(reachID), ubound(reachID)
       do i=1,size(reachID)
             if (NETOPO_in(segIndex)%REACHID == reachID(i)) then
                   ix_s_openwq = i
@@ -350,21 +334,18 @@ subroutine openwq_run_space_step(segIndex,      & ! index
             end if
       end do
       ! ix_s_openwq          = reachID(segIndex)
-      ! print*, ix_s_openwq
       compt_vol_m3         = REACH_VOL_segIndex + Qlocal_in ! That's what is received previous iteraction
       wmass_source_openwq  = compt_vol_m3
       ! *Recipient*: 
       index_r_openwq       = river_network_reaches
+      ix_r_openwq = -1
       do i=1,size(reachID)
             if (NETOPO_in(segIndex)%DREACHK == reachID(i)) then
                   ix_r_openwq = i
                   exit
             end if
       end do
-      print*, pid, ix_r_openwq, NETOPO_in(segIndex)%DREACHK, ix_s_openwq, NETOPO_in(segIndex)%REACHID
 
-      ! print*, NETOPO_in(segIndex)%DREACHI
-      ! print*, size(reachID)
       ! ix_r_openwq          = reachID(NETOPO_in(segIndex)%DREACHI)
       !ix_r_openwq          = segIndex + 1
       if(ix_r_openwq.eq.-1) return
@@ -385,7 +366,6 @@ subroutine openwq_run_space_step(segIndex,      & ! index
       index_r_openwq, ix_r_openwq, iy_r_openwq, iz_r_openwq,    &
       wflux_s2r_openwq,                                         &
       wmass_source_openwq)
-            ! print*, simtime(3), simtime(4), simtime(5), ix_s_openwq, ix_r_openwq
 
       else
             data_to_send(ix_s_openwq)%ix_r = ix_r_openwq
@@ -393,7 +373,6 @@ subroutine openwq_run_space_step(segIndex,      & ! index
             data_to_send(ix_s_openwq)%wflux_s2r = wflux_s2r_openwq
             data_to_send(ix_s_openwq)%wmass_source = wmass_source_openwq
             call MPI_Isend(data_to_send(ix_s_openwq), 1, openwq_run_space_type_mpi, 0, openwq_tag, mpicom_route, request, ierr)
-            ! print*, 'sent', simtime(3), simtime(4), simtime(5), ix_s_openwq, ix_r_openwq, wflux_s2r_openwq, wmass_source_openwq
 
       end if
 
@@ -446,7 +425,6 @@ subroutine openwq_handle_run_space_step
       logical(lgt) :: flag
 
       call MPI_Iprobe(MPI_ANY_SOURCE,openwq_tag, mpicom_route, flag, status, ierr)
-      print*, 'handle', flag
       do 
             if (.not. flag) return
 
@@ -467,7 +445,6 @@ subroutine openwq_handle_run_space_step
             iy_r_openwq = 1
             iz_s_openwq = 1
             iz_r_openwq = 1 
-            ! print*, 'openwq_run_space_step'
 
             ! Time step
             mizuroute_timestep = TSEC(2) - TSEC(1)  
@@ -499,7 +476,6 @@ subroutine openwq_handle_run_space_step
             index_r_openwq, ix_r_openwq, iy_r_openwq, iz_r_openwq,    &
             wflux_s2r_openwq,                                         &
             wmass_source_openwq)
-                  ! print*, 'handled', simtime(3), simtime(4), simtime(5), ix_s_openwq, ix_r_openwq, wflux_s2r_openwq, wmass_source_openwq
 
             call MPI_Iprobe(MPI_ANY_SOURCE,openwq_tag, mpicom_route,  flag, status, ierr)
 
@@ -520,7 +496,6 @@ subroutine openwq_run_time_end(openwq_obj)
       integer(i4b)                       :: simtime(6) ! 5 time values yy-mm-dd-hh-min
       integer(i4b)                       :: err        ! error control
 ! return
-      print*, 'run time end', pid, simDatetime(1)%hour(), simDatetime(1)%minute()
       ! Get time
       simtime(1) = simDatetime(1)%year()
       simtime(2) = simDatetime(1)%month()
